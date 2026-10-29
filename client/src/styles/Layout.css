@@ -1,0 +1,164 @@
+/* Modern Medical Blood Bank Styling - RaktDaan Portal */
+:root {
+  --primary-red: #d32f2f;
+  --dark-red: #b71c1c;
+  --sidebar-bg: #1a1e24;
+  --sidebar-hover: #262c36;
+  --card-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+body {
+  background-color: #f6f8fb;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #2c3e50;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Sidebar Styling */
+.sidebar-wrapper {
+  background-color: var(--sidebar-bg);
+  min-height: calc(100vh - 60px);
+}
+
+.sidebar {
+  min-height: calc(100vh - 60px) !important;
+  background-color: var(--sidebar-bg);
+  color: #e0e0e0;
+}
+
+.menu {
+  padding-top: 15px;
+}
+
+.menu-item {
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border-left: 4px solid transparent;
+  margin: 3px 0;
+}
+
+.menu-item:hover {
+  background-color: var(--sidebar-hover);
+  border-left-color: var(--primary-red);
+}
+
+.menu-item a {
+  color: #cfd8dc;
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  display: block;
+  width: 100%;
+}
+
+.menu-item i {
+  font-size: 1.1rem;
+  margin-right: 12px;
+  width: 22px;
+  text-align: center;
+  color: #90a4ae;
+}
+
+.menu-item:hover a,
+.menu-item:hover i {
+  color: #ffffff;
+}
+
+/* Active State */
+.active {
+  background: linear-gradient(90deg, #d32f2f 0%, #b71c1c 100%) !important;
+  border-left-color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(211, 47, 47, 0.4);
+}
+
+.active a,
+.active i {
+  color: #ffffff !important;
+  font-weight: 600;
+}
+
+/* Emergency Item Special Highlight */
+.emergency-menu-item {
+  background-color: rgba(220, 53, 69, 0.12);
+  border-left: 4px solid #dc3545;
+  margin-top: 15px !important;
+}
+
+.emergency-menu-item a {
+  color: #ff6b6b !important;
+  font-weight: 600;
+}
+
+.emergency-menu-item:hover {
+  background-color: rgba(220, 53, 69, 0.25);
+}
+
+.active-emergency {
+  background: linear-gradient(90deg, #dc3545 0%, #a71d2a 100%) !important;
+  border-left-color: #ffffff !important;
+  box-shadow: 0 4px 10px rgba(220, 53, 69, 0.5);
+}
+
+.active-emergency a,
+.active-emergency i {
+  color: #ffffff !important;
+}
+
+/* Main Content Container */
+.main-content-wrapper {
+  background-color: #f6f8fb;
+  min-height: calc(100vh - 60px);
+}
+
+/* Cards & Tables */
+.card {
+  border-radius: 12px;
+  border: none;
+  box-shadow: var(--card-shadow);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.table th {
+  font-weight: 600;
+  font-size: 0.92rem;
+  letter-spacing: 0.3px;
+}
+
+.table td {
+  font-size: 0.93rem;
+  vertical-align: middle;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(211, 47, 47, 0.03);
+}
+
+/* Badges */
+.badge {
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* Custom Hover Effects */
+.hover-white:hover {
+  color: #ffffff !important;
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.shadow-2xl {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75);
+}

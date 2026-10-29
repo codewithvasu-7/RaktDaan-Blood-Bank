@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blood Donation Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(to bottom right, #FEF2F2, #FCE7F3); /* Soft red-pink gradient background */
+            min-height: 100vh;
+        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        .tab-button.active {
+            border-bottom-color: #DC2626; 
+            color: #DC2626;
+            font-weight: 600;
+        }
+        .tab-button {
+            border-bottom-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+            padding: 1rem;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .form-input {
+            padding: 0.75rem;
+            border: 1px solid #D1D5DB;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
+        .form-input:focus {
+            border-color: #EF4444;
+            ring: 2px;
+            ring-color: #FCA5A5;
+        }
+        .card-shadow {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
+        }
+    </style>
+    
+
+</head>
+<body class="bg-gradient-to-br from-red-50 to-pink-50 text-gray-800">
+
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl md:text-3xl font-bold text-red-700 flex items-center gap-2">
+                    🩸 BDMS
+                    <span class="hidden sm:inline">Blood Donation System</span>
+                </h1>
+                <div id="user-id-display" class="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">Loading User...</div>
+            </div>
+        </div>
+    </header>
+
+    <nav class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+            <div id="tabs-container" class="flex space-x-2 sm:space-x-6 overflow-x-auto border-b border-gray-200">
+                <button data-tab="dashboard" class="tab-button active text-sm sm:text-base font-medium py-3 px-1 border-b-2 transition-all whitespace-nowrap">
+                    🏠 Dashboard
+                </button>
+                <button data-tab="donor-list" class="tab-button text-gray-500 text-sm sm:text-base font-medium py-3 px-1 border-b-2 transition-all whitespace-nowrap">
+                    👥 Donor List
+                </button>
+                <button data-tab="hospital-ops" class="tab-button text-gray-500 text-sm sm:text-base font-medium py-3 px-1 border-b-2 transition-all whitespace-nowrap">
+                    🏥 Hospital Ops
+                </button>
+                <button data-tab="inventory" class="tab-button text-gray-500 text-sm sm:text-base font-medium py-3 px-1 border-b-2 transition-all whitespace-nowrap">
+                    📦 Inventory (Mock)
+                </button>
+                <button data-tab="register-donor" class="tab-button text-gray-500 text-sm sm:text-base font-medium py-3 px-1 border-b-2 transition-all whitespace-nowrap">
+                    📝 Register Donor
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto p-4 sm:p-6 lg:p-8">
+
+        
+        <section id="dashboard" class="tab-content space-y-8">
+            <div class="relative bg-red-100 p-6 rounded-xl overflow-hidden card-shadow mb-8">
+                <div class="absolute inset-0 z-0">
+                    <img src="https://placehold.co/1200x400/fff/333?text=BDMS+Hero+Image" onerror="this.onerror=null; this.src='https://placehold.co/1200x400/fff/333?text=BDMS+Hero+Image'" alt="Digital dashboard display over diverse team setting" class="w-full h-full object-cover opacity-60 rounded-xl">
+                </div>
+                <div class="relative z-10 text-center text-gray-800 bg-white bg-opacity-80 p-6 rounded-lg">
+                    <h2 class="text-3xl font-bold text-gray-900">Welcome to BDMS: Your Impact, Our Mission</h2>
+                    <p class="mt-2 text-lg text-gray-700 max-w-3xl mx-auto">Connecting donors with those in need, powered by real-time data.</p>
+                </div>
+            </div>
+            
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-white p-6 rounded-xl card-shadow border-t-4 border-red-600 text-center">
+                    <div id="live-donor-count" class="text-4xl font-extrabold text-red-700">0</div>
+                    <div class="mt-2 text-sm font-semibold text-gray-600">Registered Donors</div>
+                </div>
+                <div class="bg-white p-6 rounded-xl card-shadow border-t-4 border-blue-600 text-center">
+                    <div id="live-hospital-count" class="text-4xl font-extrabold text-blue-700">0</div>
+                    <div class="mt-2 text-sm font-semibold text-gray-600">Registered Hospitals</div>
+                </div>
+                <div class="bg-white p-6 rounded-xl card-shadow border-t-4 border-yellow-600 text-center">
+                    <div id="live-request-count" class="text-4xl font-extrabold text-yellow-700">0</div>
+                    <div class="mt-2 text-sm font-semibold text-gray-600">Pending Blood Requests</div>
+                </div>
+                <div class="bg-white p-6 rounded-xl card-shadow border-t-4 border-gray-400 text-center">
+                    <div id="total-units" class="text-4xl font-extrabold text-gray-700">1,204</div>
+                    <div class="mt-2 text-sm font-semibold text-gray-600">Total Units in Stock (Mock)</div>
+                </div>
+            </div>
+
+            
+            <div class="bg-white p-6 rounded-xl card-shadow">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Current Inventory Snapshot</h3>
+                <div class="chart-container">
+                    <canvas id="inventoryChart"></canvas>
+                </div>
+            </div>
+        </section>
+        
+        
+        <section id="donor-list" class="tab-content hidden space-y-6">
+            <div class="text-center">
+                <h2 class="text-2xl font-semibold text-gray-900">Registered Donors</h2>
+                <p class="mt-1 text-gray-600 max-w-2xl mx-auto">This table shows all donors in the system, updating immediately upon registration.</p>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl card-shadow overflow-x-auto">
+                <div class="mb-4 text-center">
+                    <img src="https://placehold.co/800x200/fff/333?text=Diversity+of+Donors" onerror="this.onerror=null; this.src='https://placehold.co/800x200/fff/333?text=Diversity+of+Donors'" alt="Diverse group of potential blood donors" class="w-full object-cover rounded-lg max-h-48">
+                </div>
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Blood Type</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Donation</th>
+                        </tr>
+                    </thead>
+                    <tbody id="donor-list-body" class="bg-white divide-y divide-gray-200">
+                        <tr><td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">Loading donor data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+        
+        
+        <section id="hospital-ops" class="tab-content hidden space-y-6">
+            <h2 class="text-2xl font-semibold text-gray-900 text-center">Hospital Operations Management</h2>
+            
+            <div class="relative bg-blue-100 p-6 rounded-xl overflow-hidden card-shadow mb-8">
+                <div class="absolute inset-0 z-0">
+                    <img src="https://placehold.co/1200x200/fff/333?text=Hospital+System+Image" onerror="this.onerror=null; this.src='https://placehold.co/1200x200/fff/333?text=Hospital+System+Image'" alt="Modern hospital building illustration" class="w-full h-full object-cover opacity-60 rounded-xl">
+                </div>
+                <div class="relative z-10 text-center text-gray-800 bg-white bg-opacity-80 p-6 rounded-lg">
+                    <p class="mt-2 text-lg text-gray-700 max-w-3xl mx-auto">Efficiently manage hospital registrations and blood requests within the BDMS.</p>
+                </div>
+            </div>
+
+            
+            <div class="bg-white p-4 rounded-xl card-shadow">
+                <div class="flex space-x-4 border-b border-gray-200 mb-4">
+                    <button data-subtab="hospital-registration" class="subtab-button active text-sm sm:text-base font-medium py-2 px-3 border-b-2 border-red-600 text-red-600 transition-all">
+                        Register Hospital
+                    </button>
+                    <button data-subtab="blood-requests" class="subtab-button text-gray-500 text-sm sm:text-base font-medium py-2 px-3 border-b-2 transition-all">
+                        Manage Blood Requests
+                    </button>
+                    <button data-subtab="hospital-list" class="subtab-button text-gray-500 text-sm sm:text-base font-medium py-2 px-3 border-b-2 transition-all">
+                        Registered Hospitals
+                    </button>
+                </div>
+
+                
+                <div id="hospital-registration" class="subtab-content max-w-2xl mx-auto space-y-4">
+                    <h3 class="text-xl font-bold text-gray-700">New Hospital Registration</h3>
+                    <p class="text-sm text-gray-500">Register new hospital or clinic facilities authorized to interact with the BDMS.</p>
+                    <form id="hospital-registration-form" class="space-y-4">
+                        <div>
+                            <label for="hospital-name" class="block text-sm font-medium text-gray-700">Hospital Name</label>
+                            <input type="text" id="hospital-name" name="name" required class="form-input mt-1 block w-full">
+                        </div>
+                        <div>
+                            <label for="hospital-city" class="block text-sm font-medium text-gray-700">City/Location</label>
+                            <input type="text" id="hospital-city" name="city" required class="form-input mt-1 block w-full">
+                        </div>
+                        <div>
+                            <label for="hospital-contact" class="block text-sm font-medium text-gray-700">Primary Contact Email</label>
+                            <input type="email" id="hospital-contact" name="contactEmail" required class="form-input mt-1 block w-full">
+                        </div>
+                        <div id="hospital-registration-message" class="py-2 text-center text-sm font-medium"></div>
+                        <button type="submit" class="w-full py-2 px-4 rounded-lg shadow-md text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition duration-150 ease-in-out">
+                            Register Hospital
+                        </button>
+                    </form>
+                </div>
+
+                
+                <div id="blood-requests" class="subtab-content hidden space-y-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        
+                        <div class="bg-gray-50 p-6 rounded-xl border">
+                            <h3 class="text-xl font-bold text-gray-700 mb-4">Submit New Blood Request</h3>
+                            <p class="text-sm text-gray-500 mb-4">Use this form to register an urgent blood request with the system.</p>
+                            <form id="blood-request-form" class="space-y-4">
+                                <div>
+                                    <label for="request-hospital" class="block text-sm font-medium text-gray-700">Requesting Hospital</label>
+                                    <input type="text" id="request-hospital" name="requestingHospital" required class="form-input mt-1 block w-full">
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="request-bloodtype" class="block text-sm font-medium text-gray-700">Blood Type Needed</label>
+                                        <select id="request-bloodtype" name="bloodType" required class="form-input mt-1 block w-full">
+                                            <option value="" disabled selected>Select</option>
+                                            <option value="O+">O+</option><option value="A+">A+</option><option value="B+">B+</option><option value="AB+">AB+</option>
+                                            <option value="O-">O-</option><option value="A-">A-</option><option value="B-">B-</option><option value="AB-">AB-</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label for="request-units" class="block text-sm font-medium text-gray-700">Units Required</label>
+                                        <input type="number" id="request-units" name="unitsRequired" required min="1" class="form-input mt-1 block w-full">
+                                    </div>
+                                </div>
+                                <div id="request-message" class="py-2 text-center text-sm font-medium"></div>
+                                <button type="submit" class="w-full py-2 px-4 rounded-lg shadow-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 transition duration-150 ease-in-out">
+                                    Place Request
+                                </button>
+                            </form>
+                        </div>
+                        
+                        
+                        <div class="bg-gray-50 p-6 rounded-xl border overflow-x-auto">
+                            <h3 class="text-xl font-bold text-gray-700 mb-4">Pending Requests (Live)</h3>
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-white">
+                                    <tr>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Hospital</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Units</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="request-list-body" class="divide-y divide-gray-200">
+                                    <tr><td colspan="3" class="px-6 py-4 text-center text-sm text-gray-500">Loading requests...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div id="hospital-list" class="subtab-content hidden space-y-4">
+                    <h3 class="text-xl font-bold text-gray-700">System Registered Hospitals</h3>
+                    <p class="text-sm text-gray-500">List of all authorized hospitals in the database.</p>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">City</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reg. Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="hospital-list-body" class="bg-white divide-y divide-gray-200">
+                                <tr><td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">Loading hospitals...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        
+        <section id="inventory" class="tab-content hidden space-y-6">
+            <div class="text-center">
+                <h2 class="text-2xl font-semibold text-gray-900">Inventory Visualization (Mock)</h2>
+                <p class="mt-1 text-gray-600 max-w-2xl mx-auto">This section uses mock data to demonstrate how product usage can be analyzed.</p>
+            </div>
+            
+            <div class="bg-white p-6 rounded-xl card-shadow">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Blood Product Usage</h3>
+                <div class="chart-container">
+                    <canvas id="usageChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        
+        <section id="register-donor" class="tab-content hidden space-y-6">
+            <div class="text-center">
+                <h2 class="text-2xl font-semibold text-gray-900">Donor Registration & Eligibility</h2>
+                <p class="mt-1 text-gray-600 max-w-2xl mx-auto">Complete this form to register as a blood donor. Please review the eligibility criteria below.</p>
+            </div>
+
+            <div class="max-w-3xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6">
+                
+                <div class="bg-white p-6 sm:p-8 rounded-xl card-shadow">
+                    <h3 class="text-xl font-bold text-gray-700 mb-4 flex items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Blood Donation Eligibility
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4">To ensure the safety of both donors and recipients, please confirm you meet the following general criteria:</p>
+                    <ul class="list-disc list-inside space-y-2 text-gray-700 text-sm">
+                        <li><strong class="text-red-600">Age:</strong> 18 - 65 years old.</li>
+                        <li><strong class="text-red-600">Weight:</strong> At least 50 kg (110 lbs).</li>
+                        <li><strong class="text-red-600">General Health:</strong> Must be in good health and feeling well.</li>
+                        <li><strong class="text-red-600">No Recent Travel:</strong> No recent travel to malaria-endemic or other high-risk zones.</li>
+                        <li><strong class="text-red-600">Time Since Last Donation:</strong> Minimum 8 weeks since last whole blood donation.</li>
+                        <li><strong class="text-red-600">No Major Illnesses:</strong> Free from major chronic illnesses or infections.</li>
+                        <li><strong class="text-red-600">Medication:</strong> Not on certain medications that would disqualify donation.</li>
+                    </ul>
+                    <div class="mt-6 p-4 bg-red-50 border-l-4 border-red-400 text-red-700 text-sm">
+                        If you are unsure about any criteria, please consult with a medical professional before donating.
+                    </div>
+                </div>
+
+                
+                <div class="bg-white p-6 sm:p-8 rounded-xl card-shadow">
+                    <h3 class="text-xl font-bold text-gray-700 mb-4">Register Your Donor Profile</h3>
+                    <form id="donor-registration-form" class="space-y-4">
+                        <div>
+                            <label for="donor-name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                            <input type="text" id="donor-name" name="name" required class="form-input mt-1 block w-full">
+                        </div>
+                        <div>
+                            <label for="donor-email" class="block text-sm font-medium text-gray-700">Email Address</label>
+                            <input type="email" id="donor-email" name="email" required class="form-input mt-1 block w-full">
+                        </div>
+                        <div>
+                            <label for="donor-phone" class="block text-sm font-medium text-gray-700">Phone Number</label>
+                            <input type="tel" id="donor-phone" name="phone" class="form-input mt-1 block w-full">
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label for="donor-bloodtype" class="block text-sm font-medium text-gray-700">Blood Type</label>
+                                <select id="donor-bloodtype" name="bloodType" required class="form-input mt-1 block w-full">
+                                    <option value="" disabled selected>Select</option>
+                                    <option value="O+">O+</option><option value="A+">A+</option><option value="B+">B+</option><option value="AB+">AB+</option>
+                                    <option value="O-">O-</option><option value="A-">A-</option><option value="B-">B-</option><option value="AB-">AB-</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="donor-last-donation" class="block text-sm font-medium text-gray-700">Last Donation Date</label>
+                                <input type="date" id="donor-last-donation" name="lastDonationDate" class="form-input mt-1 block w-full">
+                            </div>
+                        </div>
+
+                        <div class="flex items-start mt-4">
+                            <div class="flex items-center h-5">
+                                <input type="checkbox" id="eligibility-ack" name="eligibilityAcknowledged" required class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="eligibility-ack" class="font-medium text-gray-700">I acknowledge that I meet all the required eligibility criteria.</label>
+                            </div>
+                        </div>
+
+                        <div id="donor-registration-message" class="py-2 text-center text-sm font-medium"></div>
+
+                        <button type="submit" class="w-full py-2 px-4 rounded-lg shadow-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 transition duration-150 ease-in-out">
+                            Complete Donor Registration
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 mt-12">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-4 text-center text-sm text-gray-500">
+            &copy; 2025 Blood Donation Management System. Data persistence via Firestore.
+        </div>
+    </footer>
+
+    <script type="module">
+        // Import necessary Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, serverTimestamp, setLogLevel, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        setLogLevel('Debug'); 
+        
+        // --- Firebase Configuration & Initialization ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        let db;
+        let auth;
+        let currentUserId = null;
+        let isAuthReady = false; 
+        
+        // --- Firestore Collection Paths ---
+        const COLLECTIONS = {
+            DONORS: `artifacts/${appId}/public/data/donors`,
+            HOSPITALS: `artifacts/${appId}/public/data/hospitals`,
+            REQUESTS: `artifacts/${appId}/public/data/blood_requests`,
+        };
+
+        // ** CRITICAL FIX: Use an IIAF to await sign-in before starting listeners **
+        (async () => {
+            try {
+                // 1. Initialize Firebase App
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+
+                // 2. Perform Sign-In and await the result
+                let userCredential;
+                if (initialAuthToken) {
+                    userCredential = await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    userCredential = await signInAnonymously(auth);
+                }
+
+                // 3. Update Auth State and start listeners immediately after successful sign-in
+                if (userCredential && userCredential.user) {
+                    currentUserId = userCredential.user.uid;
+                    document.getElementById('user-id-display').textContent = `User ID: ${currentUserId}`;
+                    isAuthReady = true;
+                    setupAllListeners();
+                } else {
+                    // Fallback if sign-in failed unexpectedly
+                    document.getElementById('user-id-display').textContent = 'User ID: Anonymous (Error)';
+                }
+
+            } catch (error) {
+                console.error("Firebase API connection failed during initialization or sign-in:", error);
+                document.getElementById('user-id-display').textContent = 'Firebase Error';
+            }
+        })();
+        
+        // --- Mock Data and Chart Rendering variables ---
+        const inventoryData = {
+            labels: ['O+', 'A+', 'B+', 'AB+', 'O-', 'A-', 'B-', 'AB-'],
+            units: [210, 180, 90, 45, 18, 25, 30, 12]
+        };
+        const usageData = {
+            labels: ['O+', 'A+', 'B+', 'AB+', 'O-', 'A-', 'B-', 'AB-'],
+            units: [150, 120, 60, 20, 80, 40, 35, 10]
+        };
+
+        let inventoryChart, usageChart;
+
+        // --- Utility Functions (Firestore Interaction) ---
+
+        async function saveDataToFirestore(collectionPath, data, messageElement) {
+            if (!isAuthReady || !db) {
+                messageElement.textContent = 'Error: System initializing. Please wait and try again.';
+                messageElement.className = 'py-2 text-center text-sm font-medium text-red-600';
+                return false;
+            }
+
+            messageElement.textContent = `Submitting ${collectionPath.split('/').pop()} data...`;
+            messageElement.className = 'py-2 text-center text-sm font-medium text-blue-600';
+
+            const payload = {
+                ...data,
+                registrationDate: serverTimestamp(),
+                registeredBy: currentUserId || 'anonymous'
+            };
+
+            try {
+                const maxRetries = 3;
+                let lastError = null;
+                
+                for (let attempt = 0; attempt < maxRetries; attempt++) {
+                    try {
+                        const docRef = await addDoc(collection(db, collectionPath), payload);
+                        
+                        messageElement.textContent = `Success! Record ID: ${docRef.id}`;
+                        messageElement.className = 'py-2 text-center text-sm font-medium text-green-600';
+                        return true; 
+                    } catch (error) {
+                        lastError = error;
+                        const delay = Math.pow(2, attempt) * 1000;
+                        if (attempt < maxRetries - 1) {
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                        }
+                    }
+                }
+                throw lastError; 
+
+            } catch (error) {
+                messageElement.textContent = `Error: Submission failed. ${error.message.substring(0, 50)}...`;
+                messageElement.className = 'py-2 text-center text-sm font-medium text-red-600';
+                console.error(`Error adding document to ${collectionPath}: `, error);
+                return false;
+            }
+        }
+
+        function createLiveListener(collectionPath, bodyElementId, countElementId, renderRowFn) {
+            if (!db) {
+                console.error("Firestore instance not available when setting up listener.");
+                return;
+            }
+
+            const bodyElement = document.getElementById(bodyElementId);
+            const countElement = document.getElementById(countElementId);
+
+            onSnapshot(collection(db, collectionPath), (snapshot) => {
+                bodyElement.innerHTML = '';
+                const records = [];
+                snapshot.forEach((doc) => {
+                    records.push({ id: doc.id, ...doc.data() });
+                });
+
+                if (countElement) {
+                    countElement.textContent = records.length;
+                }
+
+                if (records.length === 0) {
+                    bodyElement.innerHTML = `<tr><td colspan="${bodyElement.parentElement.querySelectorAll('th').length}" class="px-6 py-4 text-center text-sm text-gray-500">No records found.</td></tr>`;
+                    return;
+                }
+
+                records.forEach(record => {
+                    bodyElement.insertAdjacentHTML('beforeend', renderRowFn(record));
+                });
+            }, (error) => {
+                console.error(`Error setting up listener for ${collectionPath}:`, error);
+                bodyElement.innerHTML = `<tr><td colspan="${bodyElement.parentElement.querySelectorAll('th').length}" class="px-6 py-4 text-center text-sm text-red-600">Failed to load data (Permission Error).</td></tr>`;
+            });
+        }
+        
+        function setupAllListeners() {
+            // Donor Listener
+            createLiveListener(
+                COLLECTIONS.DONORS, 'donor-list-body', 'live-donor-count',
+                (donor) => {
+                    const regDate = donor.registrationDate && donor.registrationDate.toDate ? donor.registrationDate.toDate().toLocaleDateString() : 'N/A';
+                    return `
+                        <tr>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${donor.name || 'Unknown'}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-red-700 font-semibold">${donor.bloodType || 'N/A'}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${donor.email || 'N/A'}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${donor.lastDonationDate || regDate}</td>
+                        </tr>
+                    `;
+                }
+            );
+
+            // Hospital Listener
+            createLiveListener(
+                COLLECTIONS.HOSPITALS, 'hospital-list-body', 'live-hospital-count',
+                (hospital) => {
+                    const regDate = hospital.registrationDate && hospital.registrationDate.toDate ? hospital.registrationDate.toDate().toLocaleDateString() : 'N/A';
+                    return `
+                        <tr>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${hospital.name || 'N/A'}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${hospital.city || 'N/A'}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${hospital.contactEmail || 'N/A'}</td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${regDate}</td>
+                        </tr>
+                    `;
+                }
+            );
+
+            // Blood Request Listener
+            createLiveListener(
+                COLLECTIONS.REQUESTS, 'request-list-body', 'live-request-count',
+                (request) => {
+                    const typeClass = request.unitsRequired > 10 ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800';
+                    return `
+                        <tr>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">${request.requestingHospital || 'N/A'}</td>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${typeClass}">
+                                    ${request.bloodType || 'N/A'}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 whitespace-nowrap text-sm font-semibold">${request.unitsRequired || 0}</td>
+                        </tr>
+                    `;
+                }
+            );
+        }
+        
+        // --- Chart Rendering Functions ---
+        function renderInventoryChart() {
+            const ctx = document.getElementById('inventoryChart').getContext('2d');
+            inventoryChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: inventoryData.labels,
+                    datasets: [{
+                        label: 'Units in Stock',
+                        data: inventoryData.units,
+                        backgroundColor: ['#EF4444', '#F87171', '#FCA5A5', '#FECACA', '#B91C1C', '#991B1B', '#7F1D1D', '#450A0A'],
+                        borderColor: '#ffffff',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { x: { beginAtZero: true, title: { display: true, text: 'Number of Units' } } }
+                }
+            });
+        }
+
+        function renderUsageChart() {
+            const ctx = document.getElementById('usageChart').getContext('2d');
+            usageChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: usageData.labels,
+                    datasets: [{
+                        label: 'Units Used',
+                        data: usageData.units,
+                        backgroundColor: '#6D28D9'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, title: { display: true, text: 'Units Transfused' } } }
+                }
+            });
+        }
+        
+        // --- Event Listeners and Form Submission Handlers ---
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Tab Switching Logic (Main Tabs) ---
+            const tabs = document.querySelectorAll('.tab-button');
+            const contents = document.querySelectorAll('.tab-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const target = tab.getAttribute('data-tab');
+
+                    tabs.forEach(t => { t.classList.remove('active'); t.classList.add('text-gray-500'); });
+                    tab.classList.add('active'); tab.classList.remove('text-gray-500');
+
+                    contents.forEach(content => {
+                        if (content.id === target) { content.classList.remove('hidden'); } else { content.classList.add('hidden'); }
+                    });
+
+                    if (target === 'dashboard' && !inventoryChart) { renderInventoryChart(); }
+                    if (target === 'inventory' && !usageChart) { renderUsageChart(); }
+                });
+            });
+
+            // --- Tab Switching Logic (Hospital Ops Sub-Tabs) ---
+            const subTabs = document.querySelectorAll('.subtab-button');
+            const subContents = document.querySelectorAll('.subtab-content');
+
+            subTabs.forEach(subTab => {
+                subTab.addEventListener('click', () => {
+                    const target = subTab.getAttribute('data-subtab');
+
+                    subTabs.forEach(t => { 
+                        t.classList.remove('active', 'border-red-600', 'text-red-600'); 
+                        t.classList.add('text-gray-500'); 
+                        t.style.borderBottomColor = 'transparent';
+                    });
+                    subTab.classList.add('active', 'border-red-600', 'text-red-600');
+                    subTab.classList.remove('text-gray-500');
+                    subTab.style.borderBottomColor = '#DC2626';
+
+                    subContents.forEach(content => {
+                        if (content.id === target) { content.classList.remove('hidden'); } else { content.classList.add('hidden'); }
+                    });
+                });
+            });
+
+            // Start the first chart on load
+            renderInventoryChart();
+
+            // --- Form Submission Handlers (Firebase API Write Operations) ---
+            
+            // 1. Donor Registration
+            document.getElementById('donor-registration-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = Object.fromEntries(new FormData(e.target).entries());
+                const success = await saveDataToFirestore(COLLECTIONS.DONORS, formData, document.getElementById('donor-registration-message'));
+                if (success) e.target.reset();
+            });
+
+            // 2. Hospital Registration
+            document.getElementById('hospital-registration-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = Object.fromEntries(new FormData(e.target).entries());
+                const success = await saveDataToFirestore(COLLECTIONS.HOSPITALS, formData, document.getElementById('hospital-registration-message'));
+                if (success) e.target.reset();
+            });
+
+            // 3. Blood Request Submission
+            document.getElementById('blood-request-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const formData = Object.fromEntries(new FormData(e.target).entries());
+                formData.unitsRequired = parseInt(formData.unitsRequired, 10); // Ensure number type
+                const success = await saveDataToFirestore(COLLECTIONS.REQUESTS, formData, document.getElementById('request-message'));
+                if (success) e.target.reset();
+            });
+        });
+    </script>
+</body>
+</html>
