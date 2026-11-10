@@ -2,6 +2,8 @@ const userModel = require("../models/userModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
+const JWT_SECRET = process.env.JWT_SECRET || "raktdaan_secure_jwt_secret_token_2026";
+
 // Secure registration controller with OWASP input validation and privilege escalation protection
 const registerController = async (req, res) => {
   try {
@@ -119,7 +121,7 @@ const loginController = async (req, res) => {
     }
 
     // Generate JWT token with 1 day expiration
-    const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ userId: user._id, role: user.role }, JWT_SECRET, {
       expiresIn: "1d",
     });
 

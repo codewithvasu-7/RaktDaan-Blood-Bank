@@ -70,6 +70,15 @@ app.use(express.json({ limit: "1mb" }));
 app.use(morgan("dev"));
 
 // routes
+app.get("/", (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: "RaktDaan Blood Bank API is Live & Running 🚀",
+    database: require("mongoose").connection.readyState === 1 ? "Connected" : "Disconnected",
+    timestamp: new Date().toISOString(),
+  });
+});
+
 app.use("/api/v1/test", require("./routes/testRoutes"));
 app.use("/api/v1/auth", require("./routes/authRoutes"));
 app.use("/api/v1/inventory", require("./routes/inventoryRoutes"));

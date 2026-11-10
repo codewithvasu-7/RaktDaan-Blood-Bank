@@ -1,4 +1,5 @@
 const JWT = require("jsonwebtoken");
+const JWT_SECRET = process.env.JWT_SECRET || "raktdaan_secure_jwt_secret_token_2026";
 
 module.exports = async (req, res, next) => {
   try {
@@ -18,7 +19,7 @@ module.exports = async (req, res, next) => {
       });
     }
 
-    JWT.verify(token, process.env.JWT_SECRET, (err, decode) => {
+    JWT.verify(token, JWT_SECRET, (err, decode) => {
       if (err) {
         return res.status(401).send({
           success: false,
