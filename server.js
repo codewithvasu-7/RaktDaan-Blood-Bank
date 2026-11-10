@@ -47,7 +47,14 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      // Allow non-browser requests or localhost or configured CLIENT_URL or Vercel preview/production domains
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        origin.endsWith(".vercel.app") ||
+        origin.endsWith(".onrender.com") ||
+        process.env.CLIENT_URL === "*"
+      ) {
         return callback(null, true);
       }
       return callback(new Error("CORS policy violation: Access from this origin is not allowed."), false);
