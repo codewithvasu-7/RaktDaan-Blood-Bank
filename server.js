@@ -5,6 +5,8 @@ const morgan = require("morgan");
 const cors = require("cors");
 const helmet = require("helmet");
 const mongoSanitize = require("express-mongo-sanitize");
+const path = require("path");
+const fs = require("fs");
 const connectDB = require("./config/db");
 const { apiLimiter } = require("./middlewares/rateLimiters");
 
@@ -87,6 +89,18 @@ app.use("/api/v1/admin", require("./routes/adminRoutes"));
 app.use("/api/v1/emergency", require("./routes/emergencyRoutes"));
 app.use("/api/v1/camps", require("./routes/campRoutes"));
 app.use("/api/v1/national-stats", require("./routes/nationalStatsRoutes"));
+
+// Static Assets Serving for Production (Unified Railway / Monorepo Support)
+const clientBuildPath = path.join(__dirname, "client", "build");
+if (fs.existsSync(clientBuildPath)) {
+  app.use(express.static(clientBuildPath));
+  app.get("*", (req, res, next) => {
+    if (req.path.startsWith("/api/")) {
+      return next();
+    }
+    res.sendFile(path.join(clientBuildPath, "index.html"));
+  });
+}
 
 // Centralized Security Error Handler (OWASP A05 - Prevent Stack Trace Leaks)
 app.use((err, req, res, next) => {
